@@ -72,13 +72,15 @@ class Grafica:
             return False
 
 class main:
+
+    #La ejecución del programa
+
     # Cargar datos y crear diccionarios
     df_calles = pd.read_csv("calles_de_medellin_con_acoso.csv", sep=';')
     df_names = df_calles.drop(['destination', 'length', 'oneway', 'harassmentRisk', 'geometry'], axis=1)
-    df_ruta = df_calles.drop(['destination', 'length', 'oneway', 'harassmentRisk', 'name', 'origin'], axis=1)
     df_calles = df_calles.drop(['name', 'oneway', 'geometry'], axis=1)
-    table_names = defaultdict(lambda: "No se encuentra esta calle") # Diccionario para obtener el dato ingresado por el usuario
-    street_names = []
+    table = defaultdict(lambda: "No se presenta")  # Diccionario con los datos de cada calle
+    table_names = defaultdict(lambda: "No se encuentra esta calle")  # Diccionario para obtener el dato ingresado por el usuario
 
     # Crear tabla para los nombres de las calles
     for i in range(len(df_names['name'])):
@@ -93,6 +95,14 @@ class main:
         if pd.isna((df_calles['length'][i])):
             df_calles.at[i, 'length'] = 0
 
+    # Introducir datos al diccionario correspondiente (creación lista de adyacencia)
+    for i in range(len(df_calles["origin"])):
+        if df_calles["origin"][i] in table:
+            table[str(df_calles["origin"][i])] += [
+                (df_calles["destination"][i], df_calles["length"][i], df_calles["harassmentRisk"][i])]
+        else:
+            table[str(df_calles["origin"][i])] = [(df_calles["destination"][i], df_calles["length"][i], df_calles["harassmentRisk"][i])]
+
     # Pedir datos al usuario
     print("Calles Medellín:")
     print("__________________________________")
@@ -105,11 +115,15 @@ class main:
     # Crear grafos
     grafo_camio_corto = Grafica()
     grafo_menor_acoso = Grafica()
-    for i in range(len(df_calles['origin'])):
-        grafo_camio_corto.agregarVertice(df_calles['origin'][i])
-        grafo_menor_acoso.agregarVertice(df_calles['origin'][i])
-        grafo_camio_corto.agregarArista(df_calles['origin'][i], df_calles['destination'][i], df_calles['length'][i])
-        grafo_menor_acoso.agregarArista(df_calles['origin'][i], df_calles['destination'][i], df_calles['harassmentRisk'][i])
+    boolean = False
+    for i in table:
+        grafo_camio_corto.agregarVertice(i)
+        grafo_menor_acoso.agregarVertice(i)
+        a = len(table[i])
+        while a > 0:
+            grafo_camio_corto.agregarArista(i, table[i][a - 1][0], table[i][a - 1][1])
+            grafo_menor_acoso.agregarArista(i, table[i][a - 1][0], table[i][a - 1][2])
+            a -= 1
 
     # Ejecutar algoritmo
     grafo_camio_corto.dijkstra(table_names[user_option_origin])
@@ -122,6 +136,10 @@ class main:
         print("La ruta seleccionada no es transitable")
     else:
         print("Ruta con menor acoso:")
-        print(grafo_MA)
+        print(grafo_MA[0])
+        print("Acoso total:", end=" ")
+        print(grafo_MA[1])
         print("\nRuta más corta:")
-        print(grafo_CO)
+        print(grafo_CO[0])
+        print("Distancia total:", end=" ")
+        print(grafo_CO[1])
