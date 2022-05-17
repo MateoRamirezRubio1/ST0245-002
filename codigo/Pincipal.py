@@ -56,17 +56,35 @@ user_option_destination = str(input("Destino: "))
 if (user_option_origin in table_names) and (user_option_destination in table_names):
     # Crear el grafo del camino más corto
     MAP_PATH = nx.from_pandas_edgelist(df_calles, source='origin', target='destination', edge_attr='length')
-    djk_path = nx.dijkstra_path(MAP_PATH, source=table_names[user_option_origin],target=table_names[user_option_destination], weight='length')
+    djk_path = nx.dijkstra_path(MAP_PATH, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='length')
+    djk_path_length = nx.dijkstra_path_length(MAP_PATH, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='length')
 
     # Crear el grafo del camino con menor acoso
     MAP_RISK = nx.from_pandas_edgelist(df_calles, source='origin', target='destination', edge_attr='harassmentRisk')
-    djk_path_harassment = nx.dijkstra_path(MAP_RISK, source=table_names[user_option_origin],target=table_names[user_option_destination], weight='harassmentRisk')
+    djk_path_harassment = nx.dijkstra_path(MAP_RISK, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='harassmentRisk')
+    djk_path_harassment_length = nx.dijkstra_path_length(MAP_RISK, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='harassmentRisk')
 
-    # Print the previously created graphs on the screen
+    # Hallar promedios de loas caminos para las muestras
+    promedio_distancia = 0
+    promedio_acoso = 0
+    # Promedio distancia
+    for i in djk_path:
+        promedio_distancia += 1
+    promedio_distancia = djk_path_length / promedio_distancia
+    # Promedio acoso
+    for i in djk_path_harassment:
+        promedio_acoso += 1
+    promedio_acoso = djk_path_harassment_length / promedio_acoso
+
+    #Imprimir en pantalla resultados
     print("\nEsta es la ruta más corta por seguir:")
     print(djk_path)
+    print("Distancia total: ", djk_path_length)
+    print("Promedio distancia del camino:", promedio_distancia)
     print("\nEsta es la ruta con menor acoso por seguir:")
     print(djk_path_harassment)
+    print("Valor total acoso: ", djk_path_harassment_length)
+    print("Promedio acoso del camino:", promedio_acoso)
 
     # Llenar los diccionarios con los origenes obtenidos
     # Origenes camino más corto
@@ -102,7 +120,7 @@ if (user_option_origin in table_names) and (user_option_destination in table_nam
     # Graficar camino más corto
     data_camino_corto.plot(ax=ax, linewidth=1, edgecolor='darkorange')
     # Mostrar mapa con camino mas corto
-    plt.title('Camino Más Corto')
+    plt.title(f'Camino Más Corto\n Distancia total: {djk_path_length}\n Promedio dsitancia del camino: {promedio_distancia}')
     plt.tight_layout()
     plt.show()
 
@@ -116,7 +134,7 @@ if (user_option_origin in table_names) and (user_option_destination in table_nam
     # Graficar camino con menor acoso
     data_camino_menor_acoso.plot(ax=ax, linewidth=1, edgecolor='darkorange')
     # Mostrar mapa camino con menor acoso
-    plt.title('Camino Con Menor Acoso')
+    plt.title(f'Camino Con Menor Acoso\n Valor total acoso: {djk_path_harassment_length}\n Promedio acoso del camino: {promedio_acoso}')
     plt.tight_layout()
     plt.show()
 else:
