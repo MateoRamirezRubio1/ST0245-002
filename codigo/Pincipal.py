@@ -64,7 +64,7 @@ if (user_option_origin in table_names) and (user_option_destination in table_nam
     djk_path_harassment = nx.dijkstra_path(MAP_RISK, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='harassmentRisk')
     djk_path_harassment_length = nx.dijkstra_path_length(MAP_RISK, source=table_names[user_option_origin], target=table_names[user_option_destination], weight='harassmentRisk')
 
-    # Hallar promedios de loas caminos para las muestras
+    # Hallar promedios de los caminos para las muestras
     promedio_distancia = 0
     promedio_acoso = 0
     # Promedio distancia
